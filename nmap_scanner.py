@@ -7,6 +7,7 @@ print("#=========================#")
 print("Welcome to the Nmap Scanner")
 print("#=========================#")
 
+# Get target IP address from the user
 while True:
     ip_address = input("Please enter the IP address you want to scan: ")
     try:
@@ -14,14 +15,17 @@ while True:
         print(f"Valid IP address: {ip_address}")
         break
     except ValueError:
-        print("Invalid IP address. Please ensure it is in the correct format (xxx.xxx.xxx.xxx) Try again.")
+        print("Invalid IP address. Please ensure it is in the correct format. Try again.")
+
 
 # Create the arguments for the scan based on user preferences
 def scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
     args = f"{port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
     return args
-while True:
+    
+
 # Get port range from user
+while True:
     port_range = input("Enter port range (example: 1-1000) or 'ALL' for all ports: ")
     if port_range.strip().upper() == 'ALL':
         port_range = '-p-'
@@ -37,8 +41,9 @@ while True:
         except ValueError:
             print("Invalid format. Use 'start-end' (example: 1-1000) or 'ALL'.")
 
-while True:
+
 # Get scan velocity from user
+while True:
     scan_velocity = input("Select scan velocity between 1-5. 1 is the slowest but the quietest and 5 is the fastest but the loudest: ")
     if scan_velocity in ['1', '2', '3', '4', '5']:
         scan_velocity = f"-T{scan_velocity}"
@@ -46,28 +51,47 @@ while True:
     else:
         print("Invalid input. Please enter a number between 1 and 5.")
 
+
 # OS detection option
-os_detection = input("Do you want to enable OS detection? (yes/no): ").strip().lower()
-if os_detection == 'yes':
-    os_detection = '-O'
-else:
-    pass
+while True:
+    os_detection = input("Do you want to enable OS detection? (yes/no): ").strip().lower()
+    if os_detection == 'yes':
+        os_detection = '-O'
+        break
+    elif os_detection == 'no':
+        os_detection = ''
+        break
+    else:
+        print("Invalid input. Please enter 'yes' or 'no'.")
+
 
 # Victim's machine state option
-victims_machine_state = input("Do you want to know if the machine is up or down? (yes/no): ").strip().lower()
-if victims_machine_state == 'yes':
-    pass # Nmap by default checks if the host is up by doing ping
-else:
-    victims_machine_state = "-Pn"
+while True:
+    victims_machine_state = input("Do you want to know if the machine is up or down? (yes/no): ").strip().lower()
+    if victims_machine_state == 'yes':
+        pass # Nmap by default checks if the host is up by doing ping
+    elif victims_machine_state == 'no':
+        victims_machine_state = '-Pn'
+        break
+    else:
+        print("Invalid input. Please enter 'yes' or 'no'.")
+
 
 # Filter by open ports option
-ports_state = input("Do you want to filter results by open ports only? (yes/no): ").strip().lower()
-if ports_state == 'yes':
-    ports_range += ' --open'
-
-
 while True:
+    ports_state = input("Do you want to filter results by open ports only? (yes/no): ").strip().lower()
+    if ports_state == 'yes':
+        ports_state = '--open'
+        break
+    elif ports_state == 'no':
+        ports_state = ''
+        break
+    else:
+        print("Invalid input. Please enter 'yes' or 'no'.")
+
+
 # Get verbosity level from user
+while True:
     verbosity = input("How much information do you want during the scan? (low/medium/high): ").strip().lower()
     if verbosity == 'low':
         verbosity = '-v'
@@ -82,7 +106,6 @@ while True:
         print("invalid input. Pls enter low, medium or high.")
 
 
-# Perform the scan
-print("Scanning the target IP address...")
-scanner.scan(ip_address, arguments=f"")
-# Print scan results
+# Here, when the user selects os_detection as "no", we set it to an empty string, but this causes an issue in the final print statement cause it generates 2 spaces.
+# Same issue with machine_state when user selects "yes" and with ports_state when user selects "no".
+print(f"Final scan arguments: {f"IP to scan: {ip_address}", f"Scan arguments: {scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}"}")
