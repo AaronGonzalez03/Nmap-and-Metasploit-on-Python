@@ -59,7 +59,7 @@ while True:
         os_detection = '-O'
         break
     elif os_detection == 'no':
-        os_detection = None
+        os_detection = ' '
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -69,7 +69,7 @@ while True:
 while True:
     victims_machine_state = input("Do you want to know if the machine is up or down? (yes/no): ").strip().lower()
     if victims_machine_state == 'yes':
-        pass # Nmap by default checks if the host is up by doing ping
+        pass # Nmap by default checks if the ip_addres is up by doing ping
     elif victims_machine_state == 'no':
         victims_machine_state = '-Pn'
         break
@@ -84,7 +84,7 @@ while True:
         ports_state = '--open'
         break
     elif ports_state == 'no':
-        ports_state = None
+        ports_state = ' '
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -121,5 +121,16 @@ elif continue_scan == 'yes':
     print(f"Starting the scan on {ip_address}...")
 # Execute the scan and save the results
 results = scanner.scan(ip_address, arguments=scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity))
-#SHOW RESULTS OF THE SCAN
-print(results)
+# SHOW RESULTS
+for ip_address in scanner.all_hosts():
+    print('----------------------------------------------------')
+    print('ip_address : %s (%s)' % (ip_address, scanner[ip_address].hostname()))
+    print('State : %s' % scanner[ip_address].state())
+    for proto in scanner[ip_address].all_protocols():
+        print('----------')
+        print('Protocol : %s' % proto)
+
+        lport = list(scanner[ip_address][proto].keys())
+        lport.sort()
+        for port in lport:
+            print ('port : %s\tstate : %s' % (port, scanner[ip_address][proto][port]['state']))
