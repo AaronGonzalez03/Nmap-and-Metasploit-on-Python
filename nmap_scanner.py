@@ -20,7 +20,11 @@ while True:
 
 # Create the arguments for the scan based on user preferences
 def scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
-    args = f"{port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
+    if ports_state == ' ':
+        scan_type = '-sT'  # TCP connect to show closed ports
+    else:
+        scan_type = '-sS'  # SYN scan for open ports
+    args = f"{scan_type} {port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
     return args
     
 
@@ -124,13 +128,13 @@ results = scanner.scan(ip_address, arguments=scan_arguments(port_range, scan_vel
 # SHOW RESULTS
 for ip_address in scanner.all_hosts():
     print('----------------------------------------------------')
-    print('ip_address : %s (%s)' % (ip_address, scanner[ip_address].hostname()))
-    print('State : %s' % scanner[ip_address].state())
+    print(f'ip_address : {ip_address} ({scanner[ip_address].hostname()})')
+    print(f'State : {scanner[ip_address].state()}')
     for proto in scanner[ip_address].all_protocols():
         print('----------')
-        print('Protocol : %s' % proto)
+        print(f'Protocol : {proto}')
 
         lport = list(scanner[ip_address][proto].keys())
         lport.sort()
         for port in lport:
-            print ('port : %s\tstate : %s' % (port, scanner[ip_address][proto][port]['state']))
+            print(f'port : {port}\tstate : {scanner[ip_address][proto][port]["state"]}')
