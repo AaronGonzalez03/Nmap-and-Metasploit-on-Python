@@ -20,13 +20,8 @@ while True:
 
 # Create the arguments for the scan based on user preferences
 def scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
-    if ports_state == ' ':
-        scan_type = '-sT'  # TCP connect to show closed ports
-    else:
-        scan_type = '-sS'  # SYN scan for open ports
-    args = f"{scan_type} {port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
+    args = f"{port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
     return args
-    
 
 # Get port range from user
 while True:
