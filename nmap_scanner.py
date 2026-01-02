@@ -34,7 +34,7 @@ while True:
         try:
             start, end = map(int, port_range.split('-'))
             if start >= 1 and end <= 65535:
-                ports_range = f'-p {start}-{end}'
+                port_range = f'-p {start}-{end}'
                 break
             else:
                 print("Invalid range. Ports must be between 1 and 65535, and start <= end.")
@@ -59,7 +59,7 @@ while True:
         os_detection = '-O'
         break
     elif os_detection == 'no':
-        os_detection = ''
+        os_detection = None
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -84,7 +84,7 @@ while True:
         ports_state = '--open'
         break
     elif ports_state == 'no':
-        ports_state = ''
+        ports_state = None
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -106,6 +106,20 @@ while True:
         print("invalid input. Pls enter low, medium or high.")
 
 
-# Here, when the user selects os_detection as "no", we set it to an empty string, but this causes an issue in the final print statement cause it generates 2 spaces.
-# Same issue with machine_state when user selects "yes" and with ports_state when user selects "no".
+
 print(f"Final scan arguments: {f"IP to scan: {ip_address}", f"Scan arguments: {scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}"}")
+# Show to the user the final nmap command that will be executed
+print(f"Final scan command: nmap {scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}")
+
+
+continue_scan = input("Do you want to proceed with the scan? (yes/no): ").strip().lower()
+if continue_scan != 'yes':
+    print("Scan aborted by user.")
+    print("Exited the program.")
+    exit()
+elif continue_scan == 'yes':
+    print(f"Starting the scan on {ip_address}...")
+# Execute the scan and save the results
+results = scanner.scan(ip_address, arguments=scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity))
+#SHOW RESULTS OF THE SCAN
+print(results)
