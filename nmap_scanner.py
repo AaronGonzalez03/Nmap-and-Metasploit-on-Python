@@ -17,7 +17,9 @@ while True:
         print("Invalid IP address. Please ensure it is in the correct format (xxx.xxx.xxx.xxx) Try again.")
 
 # Create the arguments for the scan based on user preferences
-scan_arguments = {
+def scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
+    args = f"{port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
+    return args
 while True:
 # Get port range from user
     port_range = input("Enter port range (example: 1-1000) or 'ALL' for all ports: ")
@@ -66,19 +68,18 @@ if ports_state == 'yes':
 
 while True:
 # Get verbosity level from user
-verbosity = input("How much information do you want during the scan? (low/medium/high): ").strip().lower()
+    verbosity = input("How much information do you want during the scan? (low/medium/high): ").strip().lower()
     if verbosity == 'low':
         verbosity = '-v'
-    break
+        break
     elif verbosity == 'medium':
         verbosity = '-vv'
-    break
+        break
     elif verbosity == 'high':
         verbosity = '-vvv'
-    break
+        break
     else:
         print("invalid input. Pls enter low, medium or high.")
-}
 
 
 # Perform the scan
