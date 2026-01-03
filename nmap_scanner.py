@@ -19,8 +19,8 @@ while True:
 
 
 # Create the arguments for the scan based on user preferences
-def scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
-    args = f"{port_range} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
+def scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
+    args = f"{port_range} {detect_service_version} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
     return args
 
 # Get port range from user
@@ -39,6 +39,19 @@ while True:
                 print("Invalid range. Ports must be between 1 and 65535, and start <= end.")
         except ValueError:
             print("Invalid format. Use 'start-end' (example: 1-1000) or 'ALL'.")
+
+
+# Service version detection option
+while True:
+    service_version = input("Do you want to enable service version detection? (yes/no): ").strip().lower()
+    if service_version == 'yes':
+        detect_service_version = '-sV'
+        break
+    elif service_version == 'no':
+        detect_service_version = ' '
+        break
+    else:
+        print("Invalid input. Please enter 'yes' or 'no'.")
 
 
 # Get scan velocity from user
@@ -106,9 +119,9 @@ while True:
 
 
 
-print(f"Final scan arguments: {f"IP to scan: {ip_address}", f"Scan arguments: {scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}"}")
+print(f"Final scan arguments: {f"IP to scan: {ip_address}", f"Scan arguments: {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}"}")
 # Show to the user the final nmap command that will be executed
-print(f"Final scan command: nmap {scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}")
+print(f"Final scan command: nmap {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}")
 
 
 continue_scan = input("Do you want to proceed with the scan? (yes/no): ").strip().lower()
@@ -117,9 +130,9 @@ if continue_scan != 'yes':
     print("Exited the program.")
     exit()
 elif continue_scan == 'yes':
-    print(f"Starting the scan on {ip_address}...")
+    print(f"Scaning on {ip_address}...")
 # Execute the scan and save the results
-results = scanner.scan(ip_address, arguments=scan_arguments(port_range, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity))
+results = scanner.scan(ip_address, arguments=scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity))
 # SHOW RESULTS
 for ip_address in scanner.all_hosts():
     print('----------------------------------------------------')
@@ -132,4 +145,9 @@ for ip_address in scanner.all_hosts():
         lport = list(scanner[ip_address][proto].keys())
         lport.sort()
         for port in lport:
-            print(f'port : {port}\tstate : {scanner[ip_address][proto][port]["state"]}')
+            port_info = scanner[ip_address][proto][port]
+            service = port_info.get('name', 'unknown')
+            version = port_info.get('version', '')
+            # product is the name of the service
+            product = port_info.get('product', 'unknown')
+            print(f'port : {port}\tstate : {port_info["state"]}\tservice : {service} {product} {version}'.strip())
