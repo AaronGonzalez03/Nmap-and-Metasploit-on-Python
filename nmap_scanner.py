@@ -43,7 +43,7 @@ while True:
 
 # Service version detection option
 while True:
-    service_version = input("Do you want to enable service version detection? (yes/no): ").strip().lower()
+    service_version = input("Do you want to enable service and version detection? (yes/no): ").strip().lower()
     if service_version == 'yes':
         detect_service_version = '-sV'
         break
@@ -138,6 +138,8 @@ for ip_address in scanner.all_hosts():
     print('----------------------------------------------------')
     print(f'ip_address : {ip_address} ({scanner[ip_address].hostname()})')
     print(f'State : {scanner[ip_address].state()}')
+    if 'osmatch' in scanner[ip_address] and scanner[ip_address]['osmatch']:
+        print(f'OS : {scanner[ip_address]["osmatch"][0]["name"]} (accuracy: {scanner[ip_address]["osmatch"][0]["accuracy"]}%)')
     for proto in scanner[ip_address].all_protocols():
         print('----------')
         print(f'Protocol : {proto}')
@@ -148,6 +150,9 @@ for ip_address in scanner.all_hosts():
             port_info = scanner[ip_address][proto][port]
             service = port_info.get('name', 'unknown')
             version = port_info.get('version', '')
-            # product is the name of the service
-            product = port_info.get('product', 'unknown')
-            print(f'port : {port}\tstate : {port_info["state"]}\tservice : {service} {product} {version}'.strip())
+            product = port_info.get('product', '')
+            print(f'port : {port}\tstate : {port_info["state"]}\tservice : {service}')
+            if product:
+                print(f'product : {product}')
+            if version:
+                print(f'version : {version}')
