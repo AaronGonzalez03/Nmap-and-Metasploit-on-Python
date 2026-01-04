@@ -32,7 +32,7 @@ while True:
     else:
         try:
             start, end = map(int, port_range.split('-'))
-            if start >= 1 and end <= 65535:
+            if start >= 1 and end <= 65535 and start <= end:
                 port_range = f'-p {start}-{end}'
                 break
             else:
@@ -48,7 +48,7 @@ while True:
         detect_service_version = '-sV'
         break
     elif service_version == 'no':
-        detect_service_version = ' '
+        detect_service_version = ''
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -71,19 +71,20 @@ while True:
         os_detection = '-O'
         break
     elif os_detection == 'no':
-        os_detection = ' '
+        os_detection = ''
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
 
 
-# Victim's machine state option
+# Victim's machine state option - BUG FIX: initialize variable in both cases
 while True:
     victims_machine_state = input("Do you want to know if the machine is up or down? (yes/no): ").strip().lower()
     if victims_machine_state == 'yes':
-        pass # Nmap by default checks if the ip_addres is up by doing ping
+        victims_machine_state = ''  # Nmap by default pings to check if host is up
+        break
     elif victims_machine_state == 'no':
-        victims_machine_state = '-Pn'
+        victims_machine_state = '-Pn'  # Skip host discovery
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -96,7 +97,7 @@ while True:
         ports_state = '--open'
         break
     elif ports_state == 'no':
-        ports_state = ' '
+        ports_state = ''
         break
     else:
         print("Invalid input. Please enter 'yes' or 'no'.")
@@ -115,44 +116,79 @@ while True:
         verbosity = '-vvv'
         break
     else:
-        print("invalid input. Pls enter low, medium or high.")
+        print("Invalid input. Please enter 'low', 'medium' or 'high'.")
 
 
+print(f"\nFinal scan arguments:")
+print(f"  IP to scan: {ip_address}")
+print(f"  Scan arguments: {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}")
+print(f"\nFinal scan command: nmap {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}\n")
 
-print(f"Final scan arguments: {f"IP to scan: {ip_address}", f"Scan arguments: {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}"}")
-# Show to the user the final nmap command that will be executed
-print(f"Final scan command: nmap {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}")
 
+while True:
+    continue_scan = input("Do you want to proceed with the scan? (yes/no): ").strip().lower()
+    if continue_scan == 'yes':
+        print(f"\nScanning {ip_address}...\n")
+        break
+    elif continue_scan == 'no':
+        print("Scan aborted by user.")
+        print("Exited the program.")
+        exit()
+    else:
+        print("Invalid input. Please enter 'yes' or 'no'.")
 
-continue_scan = input("Do you want to proceed with the scan? (yes/no): ").strip().lower()
-if continue_scan != 'yes':
-    print("Scan aborted by user.")
-    print("Exited the program.")
-    exit()
-elif continue_scan == 'yes':
-    print(f"Scaning on {ip_address}...")
+print(f"\nScanning {ip_address}...")
+
 # Execute the scan and save the results
 results = scanner.scan(ip_address, arguments=scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity))
-# SHOW RESULTS
-for ip_address in scanner.all_hosts():
-    print('----------------------------------------------------')
-    print(f'ip_address : {ip_address} ({scanner[ip_address].hostname()})')
-    print(f'State : {scanner[ip_address].state()}')
-    if 'osmatch' in scanner[ip_address] and scanner[ip_address]['osmatch']:
-        print(f'OS : {scanner[ip_address]["osmatch"][0]["name"]} (accuracy: {scanner[ip_address]["osmatch"][0]["accuracy"]}%)')
-    for proto in scanner[ip_address].all_protocols():
-        print('----------')
-        print(f'Protocol : {proto}')
 
+# SHOW RESULTS
+# This loop iterates over each scanned host (usually just one)
+for ip_address in scanner.all_hosts():
+    print('='*60)
+    print(f'IP Address: {ip_address} ({scanner[ip_address].hostname()})')
+    print(f'State: {scanner[ip_address].state()}')
+    
+    # Display OS information if available
+    if 'osmatch' in scanner[ip_address] and scanner[ip_address]['osmatch']:
+        print(f'OS: {scanner[ip_address]["osmatch"][0]["name"]} (accuracy: {scanner[ip_address]["osmatch"][0]["accuracy"]}%)')
+    
+    print('='*60)
+    
+    # This loop iterates over each protocol found (tcp, udp, etc.)
+    for proto in scanner[ip_address].all_protocols():
+        print(f'\nProtocol: {proto}')
+        print('-'*60)
+
+        # Get list of ports and sort them
         lport = list(scanner[ip_address][proto].keys())
         lport.sort()
+        
+        # This loop iterates over each port found in this protocol
         for port in lport:
             port_info = scanner[ip_address][proto][port]
+            
+            # Extract port information
             service = port_info.get('name', 'unknown')
-            version = port_info.get('version', '')
             product = port_info.get('product', '')
-            print(f'port : {port}\tstate : {port_info["state"]}\tservice : {service}')
-            if product:
-                print(f'product : {product}')
-            if version:
-                print(f'version : {version}')
+            version = port_info.get('version', '')
+            
+            # Build version string in a clean way
+            # If both product and version exist, show both separated by space
+            # If only one exists, show that one
+            # If neither exists, show "unknown"
+            if product and version:
+                version_info = f"{product} {version}"
+            elif product:
+                version_info = product
+            elif version:
+                version_info = version
+            else:
+                version_info = "unknown"
+            
+            # Clean and consistent output format
+            # IMPORTANT: This print MUST be inside the for port loop
+            print(f"port: {port:<8} state: {port_info['state']:<12} service: {service:<15} {version_info}")
+    
+    # Separator line at the end of each host
+    print('\n' + '='*60 + '\n')
