@@ -19,8 +19,8 @@ while True:
 
 
 # Create the arguments for the scan based on user preferences
-def scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity):
-    args = f"{port_range} {detect_service_version} {scan_velocity} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
+def scan_arguments(port_range, detect_service_version, scan_velocity, dns_resolution, os_detection, victims_machine_state, ports_state, verbosity):
+    args = f"{port_range} {detect_service_version} {scan_velocity} {dns_resolution} {os_detection} {victims_machine_state} {ports_state} {verbosity}"
     return args
 
 # Get port range from user
@@ -62,6 +62,20 @@ while True:
         break
     else:
         print("Invalid input. Please enter a number between 1 and 5.")
+
+
+# DNS resolution
+while True:
+    dns_resolution = input("Do you want to disable DNS resolution? This will accelerate your scan (yes/no): ").strip().lower()
+    if dns_resolution == "yes":
+        dns_resolution = '-n'
+        break
+    elif dns_resolution == "no":
+        dns_resolution = ''
+        break
+    else:
+        print("Invalid input. Please enter 'yes' or 'no'.")
+        break
 
 
 # OS detection option
@@ -121,8 +135,8 @@ while True:
 
 print(f"\nFinal scan arguments:")
 print(f"  IP to scan: {ip_address}")
-print(f"  Scan arguments: {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)}")
-print(f"\nFinal scan command: nmap {scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}\n")
+print(f"  Scan arguments: {scan_arguments(port_range, detect_service_version, scan_velocity, dns_resolution, os_detection, victims_machine_state, ports_state, verbosity)}")
+print(f"\nFinal scan command: nmap {scan_arguments(port_range, detect_service_version, scan_velocity, dns_resolution, os_detection, victims_machine_state, ports_state, verbosity)} {ip_address}\n")
 
 
 while True:
@@ -140,7 +154,7 @@ while True:
 print(f"\nScanning {ip_address}...")
 
 # Execute the scan and save the results
-results = scanner.scan(ip_address, arguments=scan_arguments(port_range, detect_service_version, scan_velocity, os_detection, victims_machine_state, ports_state, verbosity))
+results = scanner.scan(ip_address, arguments=scan_arguments(port_range, detect_service_version, scan_velocity, dns_resolution, os_detection, victims_machine_state, ports_state, verbosity))
 
 # SHOW RESULTS
 # This loop iterates over each scanned host (usually just one)
